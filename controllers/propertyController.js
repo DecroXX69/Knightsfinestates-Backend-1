@@ -3,25 +3,22 @@ const Property = require('../models/Property');
 
 exports.getProperties = async (req, res) => {
   try {
-    const { location, area, type, propertyType, bedrooms } = req.query;
+    console.log('Query params:', req.query); // Debugging
+    const { location, area, type } = req.query;
     const query = {};
-    
-    // Add filters only if they are provided
     if (location) query.location = location;
     if (area) query.area = area;
     if (type) query.type = type;
-    if (propertyType) query.propertyType = propertyType;
-    if (bedrooms) query.bedrooms = bedrooms;
 
-    const properties = await Property.find(query)
-      .sort({ createdAt: -1 })
-      .limit(12);
-
+    const properties = await Property.find(query).sort({ createdAt: -1 }).limit(12);
+    console.log('Properties:', properties); // Debugging
     res.json(properties);
   } catch (error) {
+    console.error('Error fetching properties:', error); // Debugging
     res.status(500).json({ error: 'Error fetching properties' });
   }
 };
+
 
 exports.getPropertyById = async (req, res) => {
   try {
