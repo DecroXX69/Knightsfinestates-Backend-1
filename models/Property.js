@@ -43,6 +43,19 @@ const propertySchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  images: [String], // Array of image URLs
+  description: String,
+  amenities: [String],
+  floorPlans: [{
+    type: String,
+    planImage: String
+  }],
+  paymentPlan: {
+    onBooking: Number,
+    duringConstruction: Number,
+    onHandover: Number,
+    postHandover: Number
   }
 });
 
