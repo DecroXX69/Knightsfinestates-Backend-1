@@ -39,3 +39,38 @@ exports.getPropertyById = async (req, res) => {
     res.status(500).json({ error: 'Error fetching property' });
   }
 };
+
+exports.getSalePropertyById = async (req, res) => {
+  try {
+    const property = await Property.findOne({ 
+      _id: req.params.id,
+      type: 'sale'
+    });
+    
+    if (!property) {
+      return res.status(404).json({ error: 'Sale property not found' });
+    }
+    res.json(property);
+  } catch (error) {
+    console.error('Error fetching sale property:', error);
+    res.status(500).json({ error: 'Error fetching sale property' });
+  }
+};
+
+// New handler for offplan properties
+exports.getOffplanPropertyById = async (req, res) => {
+  try {
+    const property = await Property.findOne({ 
+      _id: req.params.id,
+      type: 'offplan'
+    });
+    
+    if (!property) {
+      return res.status(404).json({ error: 'Offplan property not found' });
+    }
+    res.json(property);
+  } catch (error) {
+    console.error('Error fetching offplan property:', error);
+    res.status(500).json({ error: 'Error fetching offplan property' });
+  }
+};
