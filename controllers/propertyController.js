@@ -4,13 +4,22 @@ const Property = require('../models/Property');
 exports.getProperties = async (req, res) => {
   try {
     console.log('Query params:', req.query); // Debugging
-    const { location, area, type } = req.query;
+    const { location, area, type, sort } = req.query; // Include 'sort' here
     const query = {};
     if (location) query.location = location;
     if (area) query.area = area;
     if (type) query.type = type;
 
-    const properties = await Property.find(query).sort({ createdAt: -1 }).limit(12);
+    let sortOptions = { createdAt: -1 }; // Default sort by createdAt descending
+    if (sort) {
+      const [field, order] = sort.split('=');
+      sortOptions = {};
+      sortOptions[field] = order === '1' ? 1 : -1;
+    }
+
+    const properties = await Property.find(query)
+      .sort(sortOptions) // Use the dynamically built sortOptions
+      .limit(12);
     console.log('Properties:', properties); // Debugging
     res.json(properties);
   } catch (error) {
@@ -18,7 +27,6 @@ exports.getProperties = async (req, res) => {
     res.status(500).json({ error: 'Error fetching properties' });
   }
 };
-
 
 exports.getPropertyById = async (req, res) => {
   try {
