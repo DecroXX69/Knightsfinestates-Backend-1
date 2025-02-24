@@ -2,11 +2,9 @@
 const mongoose = require('mongoose');
 const Property = require('../models/Property');
 require('dotenv').config();
-// import dubai1 from '../assets/dubai1.jpg';
-// import dubai2 from '../assets/dubai2.jpg';
-// import dubai3 from '../assets/dubai3.jpg';
-// import dubai4 from '../assets/dubai4.jpg';
-// import dubai5 from '../assets/dubai5.jpg';
+const image1 = require('../assets/background1.jpg');
+const image2 = require('../assets/background2.jpg');
+const image3 = require('../assets/background3.jpg');
 
 const sampleProperties = [
   {
@@ -16,7 +14,7 @@ const sampleProperties = [
     location: "Dubai",
     area: "Dubai Marina",
     type: "sale",
-    image: "https://picsum.photos/800/600", // Replace with actual image URL
+    image: image1, // Replace with actual image URL
     bedrooms: "2",
     propertyType: "Apartment"
   },
@@ -27,7 +25,7 @@ const sampleProperties = [
     location: "Dubai",
     area: "Business Bay",
     type: "offplan",
-    image: "https://picsum.photos/800/600", // Replace with actual image URL
+    image: image2, // Replace with actual image URL
     bedrooms: "3",
     propertyType: "Penthouse"
   },
@@ -38,7 +36,7 @@ const sampleProperties = [
     location: "Dubai",
     area: "Downtown Dubai",
     type: "sale",
-    image: "https://picsum.photos/800/600", // Replace with actual image URL
+    image: image3, // Replace with actual image URL
     bedrooms: "1",
     propertyType: "Apartment"
   },
@@ -49,7 +47,7 @@ const sampleProperties = [
     location: "Thailand",
     area: "Phuket",
     type: "sale",
-    image: "https://www.gettyimages.com/photos/dubai-properties", // Replace with actual image URL
+    image: image1, // Replace with actual image URL
     bedrooms: "2",
     propertyType: "Villa"
   },
@@ -60,7 +58,7 @@ const sampleProperties = [
     location: "Bangkok",
     area: "Sukhumvit",
     type: "offplan",
-    image: "https://unsplash.com/s/photos/dubai-house", // Replace with actual image URL
+    image: image2, // Replace with actual image URL
     bedrooms: "1",
     propertyType: "Apartment"
   },
@@ -71,7 +69,7 @@ const sampleProperties = [
     location: "Greece",
     area: "Santorini",
     type: "sale",
-    image: "https://unsplash.com/s/photos/dubai-real-estate", // Replace with actual image URL
+    image: image3, // Replace with actual image URL
     bedrooms: "3",
     propertyType: "Villa"
   }
