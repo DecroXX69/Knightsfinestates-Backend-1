@@ -20,13 +20,13 @@ const contactusSchema = new mongoose.Schema({
     chooseProperty: {
         type:String,
         enum:['Villa', 'Townhouse', 'Penthouse', 'Apartment'],
-        required: true,
+        required: false,
     },
 
     profession: {
         type: String,
         enum: ['Employed', 'Business', 'Student', 'Other'],
-        required: true,
+        required: false,
     },
 
     message: {

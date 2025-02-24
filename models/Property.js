@@ -49,7 +49,10 @@ const propertySchema = new mongoose.Schema({
     default: Date.now,
   },
   images: [String], // Array of image URLs
-  description: String,
+  description: {
+    type: String,
+    required: true,
+  },
   amenities: [String],
   floorPlans: [{
     type: String,
