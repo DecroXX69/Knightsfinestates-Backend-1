@@ -33,7 +33,11 @@ const propertySchema = new mongoose.Schema({
   },
   bedrooms: {
     type: String,
-    required: true
+    required: true,
+  },
+  baths: {
+    type: String,
+  
   },
   propertyType: {
     type: String,
