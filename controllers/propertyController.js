@@ -28,6 +28,16 @@ exports.getProperties = async (req, res) => {
   }
 };
 
+// propertyController.js
+exports.createProperty = async (req, res) => {
+  try {
+    const newProperty = await Property.create(req.body);
+    res.status(201).json(newProperty);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 exports.getPropertyById = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
