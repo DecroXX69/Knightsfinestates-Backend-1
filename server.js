@@ -19,7 +19,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 const server = http.createServer(app); // Create HTTP server
 const io = new Server(server, { // Initialize Socket.io
   cors: {
-    origin: "http://localhost:3000", // Adjust to your frontend URL
+    origin: "*", // Adjust to your frontend URL
     methods: ["GET", "POST"]
   }
 });
