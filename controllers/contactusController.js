@@ -32,7 +32,7 @@ const nodemailer = require('nodemailer');
         // Prepare the email content
         const mailOptions = {
             from: 'ajinkya.gajarmal2001@gmail.com',
-            to: 'rushikeshpalav99@gmail.com', // Replace with the email address you want to send to
+            to: 'knightsfinestates@gmail.com', // Replace with the email address you want to send to
             subject: 'New Contact Us Form Submission',
             text: `New contact message received:
 
