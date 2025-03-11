@@ -53,6 +53,21 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  // Add map coordinates field
+  coordinates: {
+    lat: {
+      type: Number,
+      default: 25.276987 // Default latitude (Dubai)
+    },
+    lng: {
+      type: Number,
+      default: 55.296249 // Default longitude (Dubai)
+    }
+  },
+  locality: {
+    type: String,
+    required: true,
+  },
   amenities: [String],
   floorPlans: [{
     type: String,
