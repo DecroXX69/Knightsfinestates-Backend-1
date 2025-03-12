@@ -28,6 +28,25 @@ exports.getProperties = async (req, res) => {
   }
 };
 
+// Update property view count
+exports.incrementViewCount = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const property = await Property.findById(id);
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+
+    property.viewCount += 1;
+    await property.save();
+
+    res.json(property);
+  } catch (error) {
+    console.error('Error incrementing view count:', error);
+    res.status(500).json({ error: 'Error incrementing view count' });
+  }
+};
 // propertyController.js
 // controllers/propertyController.js
 exports.createProperty = async (req, res) => {

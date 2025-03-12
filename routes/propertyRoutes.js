@@ -16,4 +16,5 @@ router.put('/reject/:id', propertyController.rejectProperty);
 router.put('/:id', propertyController.updateProperty);
 router.delete('/:id', propertyController.deleteProperty);
 router.get('/pending', propertyController.getPendingProperties);
+router.patch('/:id/view', propertyController.incrementViewCount);
 module.exports = router;

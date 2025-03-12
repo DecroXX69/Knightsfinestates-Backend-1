@@ -11,6 +11,12 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+
+  viewCount: {
+    type: Number,
+    default: 0
+  },
+  
   buildingName: {
     type: String,
     required: true,
