@@ -42,6 +42,19 @@ exports.createProperty = async (req, res) => {
   }
 };
 
+// controllers/propertyController.js
+exports.getPendingProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({ status: 'pending' })
+      .sort({ createdAt: -1 })
+      .limit(12);
+    res.json(properties);
+  } catch (error) {
+    console.error('Error fetching pending properties:', error);
+    res.status(500).json({ error: 'Error fetching pending properties' });
+  }
+};
+
 exports.getPropertyById = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);

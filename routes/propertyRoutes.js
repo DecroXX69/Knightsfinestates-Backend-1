@@ -15,5 +15,5 @@ router.put('/approve/:id', propertyController.approveProperty);
 router.put('/reject/:id', propertyController.rejectProperty);
 router.put('/:id', propertyController.updateProperty);
 router.delete('/:id', propertyController.deleteProperty);
-
+router.get('/pending', propertyController.getPendingProperties);
 module.exports = router;
