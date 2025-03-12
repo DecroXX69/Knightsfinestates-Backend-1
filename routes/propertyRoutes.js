@@ -9,5 +9,11 @@ router.get('/properties/:id', propertyController.getPropertyById);
 router.get('/sale/:id', propertyController.getSalePropertyById);
 router.get('/offplan/:id', propertyController.getOffplanPropertyById);
 router.post('/properties', propertyController.createProperty);
+// routes/propertyRoutes.js
+router.get('/all', propertyController.getAllProperties);
+router.put('/approve/:id', propertyController.approveProperty);
+router.put('/reject/:id', propertyController.rejectProperty);
+router.put('/:id', propertyController.updateProperty);
+router.delete('/:id', propertyController.deleteProperty);
 
 module.exports = router;

@@ -1,16 +1,17 @@
 // controllers/propertyController.js
 const Property = require('../models/Property');
 
+// controllers/propertyController.js
 exports.getProperties = async (req, res) => {
   try {
-    console.log('Query params:', req.query); // Debugging
-    const { location, area, type, sort } = req.query; // Include 'sort' here
-    const query = {};
+    console.log('Query params:', req.query);
+    const { location, area, type, sort } = req.query;
+    const query = { status: 'approved' }; // Only show approved properties by default
     if (location) query.location = location;
     if (area) query.area = area;
     if (type) query.type = type;
 
-    let sortOptions = { createdAt: -1 }; // Default sort by createdAt descending
+    let sortOptions = { createdAt: -1 };
     if (sort) {
       const [field, order] = sort.split('=');
       sortOptions = {};
@@ -18,20 +19,23 @@ exports.getProperties = async (req, res) => {
     }
 
     const properties = await Property.find(query)
-      .sort(sortOptions) // Use the dynamically built sortOptions
+      .sort(sortOptions)
       .limit(12);
-    console.log('Properties:', properties); // Debugging
     res.json(properties);
   } catch (error) {
-    console.error('Error fetching properties:', error); // Debugging
+    console.error('Error fetching properties:', error);
     res.status(500).json({ error: 'Error fetching properties' });
   }
 };
 
 // propertyController.js
+// controllers/propertyController.js
 exports.createProperty = async (req, res) => {
   try {
-    const newProperty = await Property.create(req.body);
+    const newProperty = await Property.create({
+      ...req.body,
+      status: 'pending' // Set status to pending by default
+    });
     res.status(201).json(newProperty);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -64,6 +68,85 @@ exports.getSalePropertyById = async (req, res) => {
   } catch (error) {
     console.error('Error fetching sale property:', error);
     res.status(500).json({ error: 'Error fetching sale property' });
+  }
+};
+
+exports.getAllProperties = async (req, res) => {
+  try {
+    const properties = await Property.find()
+      .sort({ createdAt: -1 })
+      .limit(12);
+    res.json(properties);
+  } catch (error) {
+    console.error('Error fetching all properties:', error);
+    res.status(500).json({ error: 'Error fetching all properties' });
+  }
+};
+
+exports.approveProperty = async (req, res) => {
+  try {
+    const property = await Property.findByIdAndUpdate(
+      req.params.id,
+      { status: 'approved' },
+      { new: true }
+    );
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+    res.json(property);
+  } catch (error) {
+    console.error('Error approving property:', error);
+    res.status(500).json({ error: 'Error approving property' });
+  }
+};
+
+// Reject a property
+exports.rejectProperty = async (req, res) => {
+  try {
+    const property = await Property.findByIdAndUpdate(
+      req.params.id,
+      { status: 'rejected' },
+      { new: true }
+    );
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+    res.json(property);
+  } catch (error) {
+    console.error('Error rejecting property:', error);
+    res.status(500).json({ error: 'Error rejecting property' });
+  }
+};
+
+// Update a property
+exports.updateProperty = async (req, res) => {
+  try {
+    const property = await Property.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+    res.json(property);
+  } catch (error) {
+    console.error('Error updating property:', error);
+    res.status(500).json({ error: 'Error updating property' });
+  }
+};
+
+// Delete a property
+exports.deleteProperty = async (req, res) => {
+  try {
+    const property = await Property.findByIdAndDelete(req.params.id);
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+    res.json({ message: 'Property deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting property:', error);
+    res.status(500).json({ error: 'Error deleting property' });
   }
 };
 

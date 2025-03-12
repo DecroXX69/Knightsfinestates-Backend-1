@@ -2,6 +2,11 @@
 const mongoose = require('mongoose');
 
 const propertySchema = new mongoose.Schema({
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
   developer: {
     type: String,
     required: true,
