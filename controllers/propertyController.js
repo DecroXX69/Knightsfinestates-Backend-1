@@ -47,6 +47,19 @@ exports.incrementViewCount = async (req, res) => {
     res.status(500).json({ error: 'Error incrementing view count' });
   }
 };
+
+// controllers/propertyController.js
+exports.getPropertiesWithViewCount = async (req, res) => {
+  try {
+    const properties = await Property.find({ status: 'approved' })
+      .select('buildingName location viewCount')
+      .sort({ viewCount: -1 });
+    res.json(properties);
+  } catch (error) {
+    console.error('Error fetching properties with view count:', error);
+    res.status(500).json({ error: 'Error fetching properties with view count' });
+  }
+};
 // propertyController.js
 // controllers/propertyController.js
 exports.createProperty = async (req, res) => {
