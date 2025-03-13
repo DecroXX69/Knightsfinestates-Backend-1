@@ -72,8 +72,8 @@ exports.login = async (req, res) => {
 
     // Verify password
     const isMatchDirect = await bcrypt.compare(password, user.password);
-    console.log(`Direct bcrypt comparison: ${isMatchDirect}`);
-    console.log(`Password attempted: ${password}`); // Log the attempted password
+    // console.log(`Direct bcrypt comparison: ${isMatchDirect}`);
+    // console.log(`Password attempted: ${password}`); // Log the attempted password
 
     if (!isMatchDirect) {
       return res.status(401).json({ error: 'Invalid credentials' });
