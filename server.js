@@ -6,6 +6,7 @@ const { Server } = require('socket.io'); // Add this
 require('dotenv').config();
 const propertyRoutes = require('./routes/propertyRoutes');
 const contactusRoutes = require('./routes/contactusRoutes');
+const authRoutes = require('./routes/authRoutes');
 const app = express();
 
 app.use(cors());
@@ -31,6 +32,7 @@ io.on('connection', (socket) => {
 
 app.use('/api', propertyRoutes);
 app.use('/api', contactusRoutes);
+app.use('/api', authRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
