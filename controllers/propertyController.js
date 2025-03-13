@@ -48,6 +48,7 @@ exports.incrementViewCount = async (req, res) => {
   }
 };
 
+// controllers/propertyController.js
 exports.updateSubStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -63,8 +64,8 @@ exports.updateSubStatus = async (req, res) => {
 
     res.json(property);
   } catch (error) {
-    console.error('Error updating sub status:', error);
-    res.status(500).json({ error: 'Error updating sub status' });
+    console.error('Error updating subStatus:', error);
+    res.status(500).json({ error: 'Error updating subStatus' });
   }
 };
 

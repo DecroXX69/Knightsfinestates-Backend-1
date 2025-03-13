@@ -18,5 +18,5 @@ router.delete('/:id', propertyController.deleteProperty);
 router.get('/pending', propertyController.getPendingProperties);
 router.patch('/:id/view', propertyController.incrementViewCount);
 router.get('/view-count', propertyController.getPropertiesWithViewCount);
-router.put('/:id/sub-status', propertyController.updateSubStatus);
+router.patch('/:id/sub-status', propertyController.updateSubStatus);
 module.exports = router;
