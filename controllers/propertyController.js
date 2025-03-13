@@ -48,6 +48,26 @@ exports.incrementViewCount = async (req, res) => {
   }
 };
 
+exports.updateSubStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subStatus } = req.body;
+    
+    const property = await Property.findById(id);
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+
+    property.subStatus = subStatus;
+    await property.save();
+
+    res.json(property);
+  } catch (error) {
+    console.error('Error updating sub status:', error);
+    res.status(500).json({ error: 'Error updating sub status' });
+  }
+};
+
 // controllers/propertyController.js
 exports.getPropertiesWithViewCount = async (req, res) => {
   try {

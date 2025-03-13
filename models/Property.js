@@ -64,6 +64,11 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  subStatus: {
+    type: String,
+    enum: ['available', 'sold'],
+    default: 'available'
+  },
   // Add map coordinates field
   coordinates: {
     lat: {
