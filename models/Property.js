@@ -99,7 +99,7 @@ const propertySchema = new mongoose.Schema({
   // Current availability status of the property
   subStatus: {
     type: String,
-    enum: ['available', 'sold', 'under construction', 'Ready to Move'],
+    enum: ['available', 'sold', 'Under Construction'],
     default: 'available'
   },
 
