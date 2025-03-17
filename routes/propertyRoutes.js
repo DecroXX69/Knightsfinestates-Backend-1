@@ -21,5 +21,5 @@ router.put('/reject/:id', authMiddleware, propertyController.rejectProperty);
 router.put('/:id', authMiddleware, propertyController.updateProperty);
 router.delete('/:id', authMiddleware, propertyController.deleteProperty);
 router.patch('/:id/sub-status', authMiddleware, propertyController.updateSubStatus);
-
+router.patch('/:id/trend', authMiddleware, propertyController.updateTrend);
 module.exports = router;

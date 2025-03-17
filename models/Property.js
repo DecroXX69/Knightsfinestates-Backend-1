@@ -160,7 +160,6 @@ const propertySchema = new mongoose.Schema({
   // SEO-friendly URL slug for the property
   slug: { 
     type: String, 
-    required: true, 
     unique: true 
   },
 

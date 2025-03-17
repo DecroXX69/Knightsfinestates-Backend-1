@@ -70,6 +70,31 @@ exports.updateSubStatus = async (req, res) => {
 };
 
 // controllers/propertyController.js
+exports.updateTrend = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { Trend } = req.body;
+    
+    // Validate that the Trend value is valid
+    if (!['normal', 'Hot'].includes(Trend)) {
+      return res.status(400).json({ error: 'Invalid trend value. Must be "normal" or "Hot"' });
+    }
+    
+    const property = await Property.findById(id);
+    if (!property) {
+      return res.status(404).json({ error: 'Property not found' });
+    }
+
+    property.Trend = Trend;
+    await property.save();
+
+    res.json(property);
+  } catch (error) {
+    console.error('Error updating property trend:', error);
+    res.status(500).json({ error: 'Error updating property trend' });
+  }
+};
+// controllers/propertyController.js
 exports.getPropertiesWithViewCount = async (req, res) => {
   try {
     const properties = await Property.find({ status: 'approved' })
