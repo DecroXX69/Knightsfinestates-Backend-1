@@ -36,6 +36,7 @@ const contactusSchema = new mongoose.Schema({
     createdAt: {  // Added timestamp field
         type: Date,
         default: Date.now,
+        immutable: true,
     },
     
 });
