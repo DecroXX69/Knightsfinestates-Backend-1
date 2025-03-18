@@ -21,7 +21,7 @@ const server = http.createServer(app); // Create HTTP server
 const io = new Server(server, { // Initialize Socket.io
   cors: {
     origin: "*", // Adjust to your frontend URL
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   }
 });
 
