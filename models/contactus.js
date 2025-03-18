@@ -33,6 +33,10 @@ const contactusSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    createdAt: {  // Added timestamp field
+        type: Date,
+        default: Date.now,
+    },
     
 });
 
