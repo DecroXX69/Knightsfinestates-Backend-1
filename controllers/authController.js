@@ -179,12 +179,35 @@ exports.refreshToken = async (req, res) => {
     res.status(401).json({ error: 'Invalid token' });
   }
 };
+exports.logout = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+      const user = await User.findById(decoded.id);
+      if (user) {
+        user.refreshToken = null;
+        await user.save();
+      }
+    }
+  } catch (error) {
+    console.error('Error clearing refresh token from DB:', error);
+  }
 
-exports.logout = (req, res) => {
-  // Clear the cookies
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
-  
+  res.clearCookie('accessToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' ? true : false,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+  });
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' ? true : false,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+  });
+
   res.json({ success: true });
 };
 
