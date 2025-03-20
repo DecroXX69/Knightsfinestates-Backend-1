@@ -10,7 +10,9 @@ exports.getProperties = async (req, res) => {
     if (location) query.location = location;
     if (area) query.area = area;
     if (type) query.type = type;
-
+    if (Trend) {
+      query.Trend = { $regex: new RegExp(`^${Trend}$`, 'i') }; // Case-insensitive match
+    }
     let sortOptions = { createdAt: -1 };
     if (sort) {
       const [field, order] = sort.split('=');
