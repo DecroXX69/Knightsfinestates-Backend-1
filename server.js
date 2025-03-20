@@ -22,8 +22,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 const server = http.createServer(app); // Create HTTP server
 const io = new Server(server, { // Initialize Socket.io
   cors: {
-    origin: "*", // Adjust to your frontend URL
+    origin: "*", // Update with frontend URL
+    credentials: true, // Allow cookies
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }
 });
 
