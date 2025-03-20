@@ -5,14 +5,16 @@ const Property = require('../models/Property');
 exports.getProperties = async (req, res) => {
   try {
     console.log('Query params:', req.query);
-    const { location, area, type, sort } = req.query;
+    const { location, area, type, Trend, sort } = req.query; // Add Trend to destructuring
     const query = { status: 'approved' }; // Only show approved properties by default
+
     if (location) query.location = location;
     if (area) query.area = area;
     if (type) query.type = type;
     if (Trend) {
       query.Trend = { $regex: new RegExp(`^${Trend}$`, 'i') }; // Case-insensitive match
     }
+
     let sortOptions = { createdAt: -1 };
     if (sort) {
       const [field, order] = sort.split('=');
