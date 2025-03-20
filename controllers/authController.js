@@ -203,6 +203,6 @@ function setTokenCookies(res, accessToken, refreshToken, rememberMe) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000 // 30 days or 7 days
+    maxAge: rememberMe ? 3 * 24 * 60 * 60 * 1000 : 1 * 24 * 60 * 60 * 1000 // 30 days or 7 days
   });
 }
