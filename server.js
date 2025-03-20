@@ -13,7 +13,7 @@ const app = express();
 app.use(cors({
   origin: "*", // Specify your frontend URL
   credentials: true, // Allow cookies/credentials
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json());
@@ -29,7 +29,7 @@ const io = new Server(server, { // Initialize Socket.io
   cors: {
     origin: "*", // Update with frontend URL
     credentials: true, // Allow cookies
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }
 });
