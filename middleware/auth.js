@@ -2,13 +2,12 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const authMiddleware = (req, res, next) => {
-  // Get the token from the Authorization header
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  // Get the token from cookies instead of Authorization header
+  const token = req.cookies.accessToken;
+  
+  if (!token) {
     return res.status(401).json({ error: 'No token provided' });
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     // Verify the token
@@ -24,6 +23,12 @@ const authMiddleware = (req, res, next) => {
     next();
   } catch (error) {
     console.error('Authentication error:', error);
+    
+    // Check if the error is due to an expired token
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired', code: 'TOKEN_EXPIRED' });
+    }
+    
     res.status(401).json({ error: 'Invalid token' });
   }
 };

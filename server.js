@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http'); // Add this
+const cookieParser = require('cookie-parser');
 const { Server } = require('socket.io'); // Add this
 require('dotenv').config();
 const propertyRoutes = require('./routes/propertyRoutes');
@@ -11,6 +12,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,

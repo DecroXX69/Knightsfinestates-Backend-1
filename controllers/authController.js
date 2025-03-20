@@ -1,104 +1,3 @@
-// const User = require('../models/user');
-// const jwt = require('jsonwebtoken');
-// require('dotenv').config();
-
-// exports.login = async (req, res) => {
-//     try {
-//       const { email, password } = req.body;
-//       console.log(`Login attempt for: ${email}`);
-  
-//       // Check if user exists
-//       const user = await User.findOne({ email });
-//       if (!user) {
-//         console.log(`User not found: ${email}`);
-//         return res.status(401).json({ error: 'Invalid credentials' });
-//       }
-  
-//       console.log(`User found: ${user._id}, isAdmin: ${user.isAdmin}`);
-  
-//       // Verify password
-//     //   const isMatch = await user.comparePassword(password);
-//     //   console.log(`Password match: ${isMatch}`);
-//       // TEMPORARY DEBUG CODE - REMOVE AFTER FIXING
-// // TEMPORARY DEBUG CODE - REMOVE AFTER FIXING
-// const bcrypt = require('bcryptjs');
-// const isMatchDirect = await bcrypt.compare(password, user.password);
-// console.log(`Direct bcrypt comparison: ${isMatchDirect}`);
-
-// if (!isMatchDirect) { // Change this from isMatch to isMatchDirect
-//   return res.status(401).json({ error: 'Invalid credentials' });
-// }
-//     // Create JWT token
-//     const token = jwt.sign(
-//       {
-//         id: user._id,
-//         email: user.email,
-//         isAdmin: user.isAdmin,
-//       },
-//       process.env.JWT_SECRET,
-//       { expiresIn: '1h' }
-//     );
-
-//     res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
-//   } catch (error) {
-//     console.error('Login error:', error);
-//     res.status(500).json({ error: 'Server error' });
-//   }
-// };
-
-
-
-// const User = require('../models/user');
-// const jwt = require('jsonwebtoken');
-// const bcrypt = require('bcryptjs');
-// // At the top of your authController.js file
-// require('dotenv').config({ path: '../.env' });
-// console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'defined' : 'undefined');
-
-// exports.login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     console.log(`Login attempt for: ${email}`);
-
-//     // Check if user exists
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       console.log(`User not found: ${email}`);
-//       return res.status(401).json({ error: 'Invalid credentials' });
-//     }
-
-//     console.log(`User found: ${user._id}, isAdmin: ${user.isAdmin}`);
-//     // console.log(`Stored hashed password: ${user.password}`); // Inspect the stored password
-
-//     // Verify password
-//     const isMatchDirect = await bcrypt.compare(password, user.password);
-//     // console.log(`Direct bcrypt comparison: ${isMatchDirect}`);
-//     // console.log(`Password attempted: ${password}`); // Log the attempted password
-
-//     if (!isMatchDirect) {
-//       return res.status(401).json({ error: 'Invalid credentials' });
-//     }
-
-//     // Create JWT token
-//     const token = jwt.sign(
-//       {
-//         id: user._id,
-//         email: user.email,
-//         isAdmin: user.isAdmin,
-//       },
-//       process.env.JWT_SECRET,
-//       { expiresIn: '1h' }
-//     );
-
-//     res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
-//   } catch (error) {
-//     console.error('Login error:', error);
-//     res.status(500).json({ error: 'Server error' });
-//   }
-// };
-
-
-
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -106,7 +5,7 @@ require('dotenv').config({ path: '../.env' });
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     console.log(`Login attempt for: ${email}`);
 
     // Check for emergency credentials
@@ -116,7 +15,7 @@ exports.login = async (req, res) => {
       email === process.env.EMERGENCY_EMAIL &&
       password === process.env.EMERGENCY_PASSWORD
     ) {
-      console.log(' login detected');
+      console.log('Emergency login detected');
 
       // Create a temporary user object for token generation
       const emergencyUser = {
@@ -125,8 +24,8 @@ exports.login = async (req, res) => {
         isAdmin: true
       };
 
-      // Create JWT token
-      const token = jwt.sign(
+      // Create access and refresh tokens
+      const accessToken = jwt.sign(
         {
           id: emergencyUser._id,
           email: emergencyUser.email,
@@ -135,9 +34,29 @@ exports.login = async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: '1h' } // Shorter expiration for emergency access
       );
+      
+      const refreshToken = jwt.sign(
+        {
+          id: emergencyUser._id,
+          tokenType: 'refresh'
+        },
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: '7d' }
+      );
 
-      console.log(' login successful');
-      return res.json({ token, user: { id: emergencyUser._id, email: emergencyUser.email, isAdmin: true } });
+      // Set httpOnly cookies for both tokens
+      setTokenCookies(res, accessToken, refreshToken, rememberMe);
+
+      console.log('Emergency login successful');
+      return res.json({ 
+        success: true, 
+        user: { 
+          id: emergencyUser._id, 
+          email: emergencyUser.email, 
+          isAdmin: true 
+        },
+        expiresIn: 3600 // 1 hour in seconds
+      });
     }
 
     // Regular login logic
@@ -161,8 +80,8 @@ exports.login = async (req, res) => {
       return res.status(403).json({ error: 'Forbidden - Admin access required' });
     }
 
-    // Create JWT token
-    const token = jwt.sign(
+    // Create access and refresh tokens
+    const accessToken = jwt.sign(
       {
         id: user._id,
         email: user.email,
@@ -171,11 +90,119 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
+    
+    const refreshToken = jwt.sign(
+      {
+        id: user._id,
+        tokenType: 'refresh'
+      },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: rememberMe ? '30d' : '7d' }
+    );
+
+    // Store refresh token in database (optional but recommended)
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // Set httpOnly cookies for both tokens
+    setTokenCookies(res, accessToken, refreshToken, rememberMe);
 
     console.log('Regular login successful');
-    res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
+    res.json({ 
+      success: true, 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        isAdmin: user.isAdmin 
+      },
+      expiresIn: 3600 // 1 hour in seconds
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.refreshToken = async (req, res) => {
+  try {
+    // Get refresh token from cookie
+    const refreshToken = req.cookies.refreshToken;
+    
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Refresh token not found' });
+    }
+    
+    // Verify the refresh token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    
+    // Check if it's really a refresh token
+    if (decoded.tokenType !== 'refresh') {
+      return res.status(401).json({ error: 'Invalid token type' });
+    }
+    
+    // Find the user
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+    
+    // Optionally verify the refresh token matches what's stored in the database
+    if (user.refreshToken !== refreshToken) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+    
+    // Create new access token
+    const accessToken = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    // Set the new access token as a cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000 // 1 hour
+    });
+    
+    res.json({ 
+      success: true,
+      expiresIn: 3600 // 1 hour in seconds
+    });
+  } catch (error) {
+    console.error('Token refresh error:', error);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+exports.logout = (req, res) => {
+  // Clear the cookies
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken');
+  
+  res.json({ success: true });
+};
+
+// Helper function to set token cookies
+function setTokenCookies(res, accessToken, refreshToken, rememberMe) {
+  // Set access token cookie (short-lived)
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 1000 // 1 hour
+  });
+  
+  // Set refresh token cookie (long-lived)
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000 // 30 days or 7 days
+  });
+}
