@@ -190,19 +190,17 @@ exports.logout = (req, res) => {
 
 // Helper function to set token cookies
 function setTokenCookies(res, accessToken, refreshToken, rememberMe) {
-  // Set access token cookie (short-lived)
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
-    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production' ? true : false, // Must be true in production for cross-origin
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use 'none' for cross-origin in production
     maxAge: 60 * 60 * 1000 // 1 hour
   });
-  
-  // Set refresh token cookie (long-lived)
+
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: rememberMe ? 3 * 24 * 60 * 60 * 1000 : 1 * 24 * 60 * 60 * 1000 // 30 days or 7 days
+    secure: process.env.NODE_ENV === 'production' ? true : false,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000 // 30 days or 7 days
   });
 }
