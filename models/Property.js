@@ -133,7 +133,7 @@ const propertySchema = new mongoose.Schema({
 
   // Floor plan image URL
   floorPlan: { 
-    type: String, 
+    type: [String], 
     default: null 
   }, 
 
