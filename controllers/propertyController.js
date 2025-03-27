@@ -53,10 +53,11 @@ exports.incrementViewCount = async (req, res) => {
 };
 
 // controllers/propertyController.js
+// controllers/propertyController.js
 exports.updateSubStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { subStatus } = req.body;
+    const { subStatus, possessionDate } = req.body; // Add possessionDate to request body
     
     const property = await Property.findById(id);
     if (!property) {
@@ -64,8 +65,13 @@ exports.updateSubStatus = async (req, res) => {
     }
 
     property.subStatus = subStatus;
-    await property.save();
+    if (subStatus === 'Under Construction' && possessionDate) {
+      property.possessionDate = new Date(possessionDate); // Save the possession date
+    } else if (subStatus !== 'Under Construction') {
+      property.possessionDate = null; // Clear possession date if not under construction
+    }
 
+    await property.save();
     res.json(property);
   } catch (error) {
     console.error('Error updating subStatus:', error);

@@ -98,6 +98,12 @@ const propertySchema = new mongoose.Schema({
   metaKeywords: [{ type: String }],
   reraApproved: { type: Boolean, default: false },
   reraNumber: { type: String, default: null },
+
+  possessionDate: { // New field for possession date
+    type: Date,
+    default: null, // Only set when subStatus is "Under Construction"
+  },
+  
   // New field for multiple configurations
   configurations: [configurationSchema],
 });
