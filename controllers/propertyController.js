@@ -232,58 +232,71 @@ exports.rejectProperty = async (req, res) => {
     res.status(500).json({ error: 'Error rejecting property' });
   }
 };
-
-// Update a property
 exports.updateProperty = async (req, res) => {
   try {
       const propertyId = req.params.id;
-      const incomingData = req.body;
+      const incomingData = req.body; // Contains new URLs
 
       const existingProperty = await Property.findById(propertyId);
       if (!existingProperty) {
           return res.status(404).json({ error: 'Property not found' });
       }
 
-      // --- S3 Deletion Logic for Replaced/Removed Images ---
+      // --- S3 Deletion Logic for Replaced/Removed Media ---
       const oldUrls = [];
-      if (existingProperty.image) oldUrls.push(existingProperty.image);
-      if (existingProperty.images) oldUrls.push(...existingProperty.images);
-      if (existingProperty.floorPlan) oldUrls.push(...existingProperty.floorPlan);
-      // Add brochureURL, LegalDocURL if needed
+      if (existingProperty.image && existingProperty.image !== incomingData.image) {
+           oldUrls.push(existingProperty.image);
+      }
+      if (existingProperty.images && Array.isArray(existingProperty.images)) {
+          existingProperty.images.forEach(url => {
+              // Add URL to delete if it's not present in the incoming 'images' array
+              if (!incomingData.images || !incomingData.images.includes(url)) {
+                  oldUrls.push(url);
+              }
+          });
+      }
+      if (existingProperty.floorPlan && Array.isArray(existingProperty.floorPlan)) {
+           existingProperty.floorPlan.forEach(url => {
+              if (!incomingData.floorPlan || !incomingData.floorPlan.includes(url)) {
+                  oldUrls.push(url);
+              }
+          });
+      }
+      // NEW: Check Brochure URL
+      if (existingProperty.brochureURL && existingProperty.brochureURL !== incomingData.brochureURL) {
+          oldUrls.push(existingProperty.brochureURL);
+      }
+      // NEW: Check Legal Document URL
+      if (existingProperty.LegalDocURL && existingProperty.LegalDocURL !== incomingData.LegalDocURL) {
+          oldUrls.push(existingProperty.LegalDocURL);
+      }
 
-      const newUrls = [];
-      if (incomingData.image) newUrls.push(incomingData.image);
-      if (incomingData.images) newUrls.push(...incomingData.images);
-      if (incomingData.floorPlan) newUrls.push(...incomingData.floorPlan);
-      // Add brochureURL, LegalDocURL if needed
+      // Filter out any null/undefined values just in case
+      const urlsToDelete = oldUrls.filter(url => url);
 
-      // Find URLs that are in oldUrls but not in newUrls
-      const urlsToDelete = oldUrls.filter(url => !newUrls.includes(url));
-
-      // Only delete if there are URLs marked for deletion
       if (urlsToDelete.length > 0) {
+           console.log("Deleting old S3 objects:", urlsToDelete); // Log deletion targets
            await deleteS3Objects(urlsToDelete);
       }
       // --- End S3 Deletion Logic ---
 
-      // Ensure status is not overwritten unless explicitly provided in update
+      // Ensure status is not overwritten unless explicitly provided
       if (!incomingData.status) {
           incomingData.status = existingProperty.status;
       }
       // Add updatedAt timestamp
-       incomingData.updatedAt = new Date();
+      incomingData.updatedAt = new Date();
 
 
       const updatedProperty = await Property.findByIdAndUpdate(
           propertyId,
-          incomingData,
-          { new: true, runValidators: true } // Ensure validation runs on update
+          incomingData, // Pass the whole body which includes the new URLs
+          { new: true, runValidators: true } // return updated doc, run validation
       );
 
       res.json(updatedProperty);
   } catch (error) {
       console.error('Error updating property:', error);
-      // Handle potential validation errors from Mongoose
       if (error.name === 'ValidationError') {
            return res.status(400).json({ error: error.message });
       }
@@ -291,40 +304,43 @@ exports.updateProperty = async (req, res) => {
   }
 };
 
-
-
 exports.deleteProperty = async (req, res) => {
-    try {
-        const property = await Property.findById(req.params.id);
-        if (!property) {
-            return res.status(404).json({ error: 'Property not found' });
-        }
+  try {
+      const property = await Property.findById(req.params.id);
+      if (!property) {
+          return res.status(404).json({ error: 'Property not found' });
+      }
 
-        // --- S3 Deletion Logic ---
-        const urlsToDelete = [];
-        if (property.image) urlsToDelete.push(property.image);
-        if (property.images && Array.isArray(property.images)) {
-            urlsToDelete.push(...property.images);
-        }
-        if (property.floorPlan && Array.isArray(property.floorPlan)) {
-            urlsToDelete.push(...property.floorPlan);
-        }
-        // Add brochureURL, LegalDocURL if they are also S3 uploads managed this way
-        // if (property.brochureURL && property.brochureURL.includes(S3_BUCKET_NAME)) urlsToDelete.push(property.brochureURL);
-        // if (property.LegalDocURL && property.LegalDocURL.includes(S3_BUCKET_NAME)) urlsToDelete.push(property.LegalDocURL);
+      // --- S3 Deletion Logic ---
+      const urlsToDelete = [];
+      if (property.image) urlsToDelete.push(property.image);
+      if (property.images && Array.isArray(property.images)) {
+          urlsToDelete.push(...property.images);
+      }
+      if (property.floorPlan && Array.isArray(property.floorPlan)) {
+          urlsToDelete.push(...property.floorPlan);
+      }
+      // NEW: Add Brochure and Legal Doc URLs if they exist
+      if (property.brochureURL) urlsToDelete.push(property.brochureURL);
+      if (property.LegalDocURL) urlsToDelete.push(property.LegalDocURL);
 
-        await deleteS3Objects(urlsToDelete);
-        // --- End S3 Deletion Logic ---
+      // Filter out any null/undefined values
+      const validUrlsToDelete = urlsToDelete.filter(url => url);
 
-        await Property.findByIdAndDelete(req.params.id);
+      if (validUrlsToDelete.length > 0) {
+          console.log("Deleting S3 objects for property:", validUrlsToDelete); // Log deletion targets
+          await deleteS3Objects(validUrlsToDelete);
+      }
+      // --- End S3 Deletion Logic ---
 
-        res.json({ message: 'Property and associated files deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting property:', error);
-        res.status(500).json({ error: 'Error deleting property' });
-    }
+      await Property.findByIdAndDelete(req.params.id);
+
+      res.json({ message: 'Property and associated files deleted successfully' });
+  } catch (error) {
+      console.error('Error deleting property:', error);
+      res.status(500).json({ error: 'Error deleting property' });
+  }
 };
-
 // New handler for offplan properties
 exports.getOffplanPropertyById = async (req, res) => {
   try {
