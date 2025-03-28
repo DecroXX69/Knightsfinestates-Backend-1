@@ -8,6 +8,7 @@ require('dotenv').config();
 const propertyRoutes = require('./routes/propertyRoutes');
 const contactusRoutes = require('./routes/contactusRoutes');
 const authRoutes = require('./routes/authRoutes');
+const s3Routes = require('./routes/s3Routes');
 const app = express();
 
 // CORS setup for all origins
@@ -48,7 +49,7 @@ io.on('connection', (socket) => {
 app.use('/api', propertyRoutes);
 app.use('/api', contactusRoutes);
 app.use('/api', authRoutes);
-
+app.use('/api/', s3Routes); 
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong!' });

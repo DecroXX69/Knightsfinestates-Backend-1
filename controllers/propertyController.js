@@ -1,6 +1,7 @@
 // controllers/propertyController.js
 const Property = require('../models/Property');
 
+const { deleteS3Object, deleteS3Objects } = require('../utils/s3DeleteHelper'); // Adjust path
 // controllers/propertyController.js
 exports.getProperties = async (req, res) => {
   try {
@@ -120,13 +121,26 @@ exports.getPropertiesWithViewCount = async (req, res) => {
 // controllers/propertyController.js
 exports.createProperty = async (req, res) => {
   try {
-    const newProperty = await Property.create({
-      ...req.body,
-      status: 'pending' // Set status to pending by default
-    });
+    // The req.body should already contain the S3 URLs from the frontend
+    const newPropertyData = {
+        ...req.body,
+        status: 'pending' // Set status to pending by default
+    };
+
+    // Validate that necessary URLs are present (basic check)
+    if (!newPropertyData.image) {
+         return res.status(400).json({ error: 'Main image URL is required.' });
+    }
+    // Add more validation as needed for other fields
+
+    const newProperty = await Property.create(newPropertyData);
     res.status(201).json(newProperty);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error creating property:', error);
+     if (error.name === 'ValidationError') {
+         return res.status(400).json({ error: error.message });
+     }
+    res.status(400).json({ error: 'Failed to create property' });
   }
 };
 
@@ -222,33 +236,93 @@ exports.rejectProperty = async (req, res) => {
 // Update a property
 exports.updateProperty = async (req, res) => {
   try {
-    const property = await Property.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!property) {
-      return res.status(404).json({ error: 'Property not found' });
-    }
-    res.json(property);
+      const propertyId = req.params.id;
+      const incomingData = req.body;
+
+      const existingProperty = await Property.findById(propertyId);
+      if (!existingProperty) {
+          return res.status(404).json({ error: 'Property not found' });
+      }
+
+      // --- S3 Deletion Logic for Replaced/Removed Images ---
+      const oldUrls = [];
+      if (existingProperty.image) oldUrls.push(existingProperty.image);
+      if (existingProperty.images) oldUrls.push(...existingProperty.images);
+      if (existingProperty.floorPlan) oldUrls.push(...existingProperty.floorPlan);
+      // Add brochureURL, LegalDocURL if needed
+
+      const newUrls = [];
+      if (incomingData.image) newUrls.push(incomingData.image);
+      if (incomingData.images) newUrls.push(...incomingData.images);
+      if (incomingData.floorPlan) newUrls.push(...incomingData.floorPlan);
+      // Add brochureURL, LegalDocURL if needed
+
+      // Find URLs that are in oldUrls but not in newUrls
+      const urlsToDelete = oldUrls.filter(url => !newUrls.includes(url));
+
+      // Only delete if there are URLs marked for deletion
+      if (urlsToDelete.length > 0) {
+           await deleteS3Objects(urlsToDelete);
+      }
+      // --- End S3 Deletion Logic ---
+
+      // Ensure status is not overwritten unless explicitly provided in update
+      if (!incomingData.status) {
+          incomingData.status = existingProperty.status;
+      }
+      // Add updatedAt timestamp
+       incomingData.updatedAt = new Date();
+
+
+      const updatedProperty = await Property.findByIdAndUpdate(
+          propertyId,
+          incomingData,
+          { new: true, runValidators: true } // Ensure validation runs on update
+      );
+
+      res.json(updatedProperty);
   } catch (error) {
-    console.error('Error updating property:', error);
-    res.status(500).json({ error: 'Error updating property' });
+      console.error('Error updating property:', error);
+      // Handle potential validation errors from Mongoose
+      if (error.name === 'ValidationError') {
+           return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: 'Error updating property' });
   }
 };
 
-// Delete a property
+
+
 exports.deleteProperty = async (req, res) => {
-  try {
-    const property = await Property.findByIdAndDelete(req.params.id);
-    if (!property) {
-      return res.status(404).json({ error: 'Property not found' });
+    try {
+        const property = await Property.findById(req.params.id);
+        if (!property) {
+            return res.status(404).json({ error: 'Property not found' });
+        }
+
+        // --- S3 Deletion Logic ---
+        const urlsToDelete = [];
+        if (property.image) urlsToDelete.push(property.image);
+        if (property.images && Array.isArray(property.images)) {
+            urlsToDelete.push(...property.images);
+        }
+        if (property.floorPlan && Array.isArray(property.floorPlan)) {
+            urlsToDelete.push(...property.floorPlan);
+        }
+        // Add brochureURL, LegalDocURL if they are also S3 uploads managed this way
+        // if (property.brochureURL && property.brochureURL.includes(S3_BUCKET_NAME)) urlsToDelete.push(property.brochureURL);
+        // if (property.LegalDocURL && property.LegalDocURL.includes(S3_BUCKET_NAME)) urlsToDelete.push(property.LegalDocURL);
+
+        await deleteS3Objects(urlsToDelete);
+        // --- End S3 Deletion Logic ---
+
+        await Property.findByIdAndDelete(req.params.id);
+
+        res.json({ message: 'Property and associated files deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting property:', error);
+        res.status(500).json({ error: 'Error deleting property' });
     }
-    res.json({ message: 'Property deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting property:', error);
-    res.status(500).json({ error: 'Error deleting property' });
-  }
 };
 
 // New handler for offplan properties
