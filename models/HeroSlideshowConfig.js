@@ -12,6 +12,15 @@ const heroSlideshowConfigSchema = new mongoose.Schema({
         type: [String], // Array of S3 URLs
         default: [],
     },
+    // --- Add this field ---
+    showSearchBox: {
+        type: Boolean,
+        default: false, // Default to not showing the search box
+    },
+    // ----------------------
 }, { timestamps: true });
+
+// Ensure the identifier is indexed for quick lookups
+heroSlideshowConfigSchema.index({ identifier: 1 });
 
 module.exports = mongoose.model('HeroSlideshowConfig', heroSlideshowConfigSchema);
