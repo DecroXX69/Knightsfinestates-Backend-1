@@ -7,6 +7,6 @@ router.post('/contactus', contactusController.createContactus);
 router.get('/contactus', contactusController.getAllContactus);
 router.get('/contactus/:id', contactusController.getContactusById);
 router.delete('/contactus/:id', contactusController.deleteContactus);
-
+router.get('/submissions', contactusController.getAllSubmissions);
 
 module.exports = router;

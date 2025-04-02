@@ -1,6 +1,7 @@
 const Contactus = require('../models/contactus');  // Import the Contactus model
 const nodemailer = require('nodemailer');
-
+const axios = require('axios');  // Import axios for making HTTP requests
+const LAMBDA_API_URL = 'https://p7hjkeqa74.execute-api.eu-north-1.amazonaws.com/prod/contactform';
     // Controller for handling the creation of a new contact us message
     exports.createContactus = async (req, res) => {
         try {
@@ -130,3 +131,38 @@ ${message}`
             });
         }
     };
+
+
+    exports.getAllSubmissions = async (req, res) => {
+        try {
+          console.log('Making request to Lambda API:', LAMBDA_API_URL);
+          
+          const response = await axios.get(LAMBDA_API_URL);
+          console.log('Lambda API response status:', response.status);
+          console.log('Lambda API response data:', JSON.stringify(response.data));
+          
+          // Check if submissions exist in the response
+          const submissions = response.data.submissions || [];
+          
+          res.status(200).json({
+            success: true,
+            data: submissions,
+            meta: {
+              count: submissions.length,
+              source: 'lambda'
+            }
+          });
+        } catch (error) {
+          console.error('Error fetching submissions:', error.message);
+          if (error.response) {
+            console.error('Response status:', error.response.status);
+            console.error('Response data:', error.response.data);
+          }
+          
+          res.status(500).json({
+            success: false,
+            message: 'Failed to fetch contact submissions',
+            error: error.response?.data || error.message
+          });
+        }
+      };
