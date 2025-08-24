@@ -19,35 +19,19 @@ npm run dev
 npm start
 
 🏡 Knightsfin Real Estate – Backend
-
 A scalable real estate management backend built with Node.js, Express.js, and MongoDB, designed to handle property listings, client interactions, and business expansion features such as lead generation.
 
 🚀 Features
-
-User & Admin authentication with JWT
-
-CRUD operations for properties, users, and leads
-
-API endpoints for property search & filtering
-
-Contact form integration for lead generation
-
-Centralized error handling & validation
-
-Environment-based configuration for flexibility
-
-Modular, clean, and scalable code structure
+1. User & Admin authentication with JWT
+2. CRUD operations for properties, users, and leads
+3. API endpoints for property search & filtering
+4. Contact form integration for lead generation
+5. Centralized error handling & validation
+6. Environment-based configuration for flexibility
+7. Modular, clean, and scalable code structure
 
 🛠️ Tech Stack
-
-Backend Framework: Node.js (Express.js)
-
-Database: MongoDB (Mongoose ODM)
-
-Authentication: JWT (JSON Web Token)
-
-Testing Tools: Postman, Thunder Client
-
-Deployment: PM2, Docker (optional)
-
-Bug Tracking: Redmine
+1. Backend Framework: Node.js (Express.js)
+2. Database: MongoDB (Mongoose ODM)
+3. Authentication: JWT (JSON Web Token)
+4. Testing Tools: Postman, Thunder Client
